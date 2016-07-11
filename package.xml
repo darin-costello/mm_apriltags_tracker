@@ -1,0 +1,31 @@
+<package>
+  <!-- Package Metadata -->
+  <name>mm_apriltags_tracker</name>
+  <maintainer email="daqing.yi@byu.edu">Walter</maintainer>
+  <description>
+    mmple April Tags Tracker
+  </description>
+  <version>0.0.0</version>
+  <license>BSD</license>
+
+  <!-- Required by Catkin -->
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>cv_bridge</build_depend>
+  <build_depend>image_transport</build_depend>
+  <build_depend>image_geometry</build_depend>
+
+  <run_depend>cv_bridge</run_depend>
+  <run_depend>image_transport</run_depend>
+  <run_depend>image_geometry</run_depend>
+
+  <!-- Package Dependencies -->
+  <build_depend>roscpp</build_depend>
+  <run_depend>roscpp</run_depend>
+
+  <build_depend>april_tag_pos_msg</build_depend>
+  <run_depend>april_tag_pos_msg</run_depend>
+
+  <build_depend>message_generation</build_depend>
+  <run_depend>message_runtime</run_depend>
+</package>
