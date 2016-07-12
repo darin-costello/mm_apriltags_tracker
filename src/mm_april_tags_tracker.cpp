@@ -107,7 +107,7 @@ MMAprilTagsTracker::MMAprilTagsTracker( AprilTags::TagCodes codes  ) : m_it( m_n
   cv::namedWindow(MM_APRIL_TAGS_TRACKER_VIEW);
   cv::startWindowThread();
 
-  m_sub = m_it.subscribe("/camera/image_raw",
+  m_sub = m_it.subscribe("image",
                           1,
                           &MMAprilTagsTracker::imageCallback,
                           this);
