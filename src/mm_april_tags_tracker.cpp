@@ -140,15 +140,17 @@ MMAprilTagsTracker::MMAprilTagsTracker( AprilTags::TagCodes codes  ) : m_it( m_n
 
   for (auto x: param){
     int id = stoi(x.first.substr(0, x.first.size() - 1));
+    std::cout << "id: " << id << "\t";
     std::pair<double, double> coord (0,0);
     if(absLocs.end() != absLocs.find(id)){
-      absLocs[id] = coord;
+      coord = absLocs[id];
     }
     if(x.first[x.first.size() - 1] == 'x'){
       coord.first = (double)x.second;
     } else {
       coord.second = (double)x.second;
     }
+    std::cout << "(" << coord.first << ", " << coord.second <<")\n";
     absLocs[id] = coord;
   }
   groundLocs = absLocs;
