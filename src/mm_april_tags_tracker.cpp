@@ -4,6 +4,7 @@
 #include <string>
 #include <Eigen/Dense>
 #include <opencv2/highgui/highgui.hpp>
+#include "opencv2/calib3d/calib3d.hpp"
 #include <opencv2/opencv.hpp>
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
@@ -15,7 +16,6 @@
 
 using namespace std;
 using namespace cv;
-using namespace Eigen;
 
 
 #define MM_APRIL_TAGS_TRACKER_VIEW "mm April Tags Tracker"
@@ -34,53 +34,32 @@ float convRadius(float radius) {
 
 void MMAprilTagsTracker::calibrate(vector<AprilTags::TagDetection> tags){
   vector<AprilTags::TagDetection> grounding;
+  vector<cv::Point2f> srcPoints;
+  vector<cv::Point2f> dstPoints;
   int foundNumber = 0;
   for(auto t:tags){
     if(groundLocs.end() != groundLocs.find(t.id)){
-      grounding.push_back(t);
+      srcPoints.push_back(Point2f(t.cxy.first, t.cxy.second));
+      dstPoints.push_back(Point2f(groundLocs[t.id].first, groundLocs[t.id].second));
       foundNumber++;
     }
-    if(foundNumber == 2) break;
+
   }
-  if(foundNumber < 2) return;
-  Matrix4d m;
-  m(0,2) = m(1,3) = m(2,2) = m(3,3) = 1;
-  m(0,3) = m(1,2) = m(2,3) = m(3,2) = 0;
 
-  m(0,0) = grounding[0].cxy.first;
-  m(0,1) = grounding[0].cxy.second;
-  m(1,0) = -1.0 * grounding[0].cxy.second;
-  m(1,1) = grounding[0].cxy.first;
-
-  m(2,0) = grounding[1].cxy.first;
-  m(2,1) = grounding[1].cxy.second;
-  m(3,0) = -1 * grounding[1].cxy.second;
-  m(3,1) = grounding[1].cxy.first;
-
-  Vector4d v(
-    groundLocs[grounding[0].id].first,
-    groundLocs[grounding[1].id].first,
-    groundLocs[grounding[0].id].second,
-    groundLocs[grounding[1].id].second);
-
-  Vector4d transformVect = (m.inverse()) * v;
+  if(foundNumber < 4) return;
+  transformer = findHomography(srcPoints, dstPoints);
   calibrated = true;
 }
 
 std::pair<double,double> MMAprilTagsTracker::transform(double x, double y){
-  double xP = (transformVect(0) * x) + (transformVect(1) * y) + transformVect(2);
-  double yP = (transformVect(1) * x) - (transformVect(0) * y) + transformVect(3);
-  return std::pair<double, double>(xP, yP);
-}
+
+  return std::pair<double, double>(0, 0);
+  }
 
 void MMAprilTagsTracker::imageCallback( const sensor_msgs::ImageConstPtr& msg) {
   cv_bridge::CvImagePtr cv_ptr;
   try {
-#ifdef MONO_COLOR
-    cv_ptr = cv_bridge::toCvCopy( msg, "mono8" );
-#else
     cv_ptr = cv_bridge::toCvCopy( msg, "bgr8" );
-#endif
   }
   catch( cv_bridge::Exception& e ) {
     ROS_ERROR( "cv_bridge exce[topm: %s", e.what() );
@@ -89,22 +68,25 @@ void MMAprilTagsTracker::imageCallback( const sensor_msgs::ImageConstPtr& msg) {
   vector<AprilTags::TagDetection> tags = extractTags( cv_ptr->image );
   if(!calibrated){
     calibrate(tags);
-  }
-  else if( tags.size() > 0) {
+  } else if( tags.size() > 0) {
     mm_apriltags_tracker::april_tag_pos msg;
+    std::vector<cv::Point2f> src;
     for( unsigned int i=0; i<tags.size(); i++ ){
       AprilTags::TagDetection tag = tags[i];
       if(groundLocs.end() != groundLocs.find(tag.id)) continue;
       tag.draw(cv_ptr->image);
-
       msg.id.push_back( tag.id );
-      geometry_msgs::Pose2D pose;
-      std::pair<double, double>  transCord = transform(tag.cxy.first,tag.cxy.second);
-      pose.x = transCord.first;
-      pose.y = transCord.second;
-      pose.theta = convRadius( tag.getXYOrientation() );
-      msg.pose.push_back( pose );
+      src.push_back(Point2f(tag.cxy.first, tag.cxy.second));
+    }
+    if(src.size() == 0) return;
+    vector<Point2f> dst(src.size());
+    perspectiveTransform(src, dst, transformer);
 
+    for(int i = 0; i < dst.size() ; i++){
+      geometry_msgs::Pose2D pose;
+      pose.x = dst[i].x;
+      pose.y = dst[i].y;
+      msg.pose.push_back(pose);
     }
     m_pos_pub.publish(msg);
   }
@@ -165,11 +147,7 @@ MMAprilTagsTracker::~MMAprilTagsTracker() {
 }
 
 std::vector<AprilTags::TagDetection> MMAprilTagsTracker::extractTags( cv::Mat& image) {
-#ifdef MONO_COLOR
-   return mp_tag_detector->extractTags( image );
-#else
    cv::Mat gray_img;
    cvtColor( image, gray_img, CV_BGR2GRAY );
    return mp_tag_detector->extractTags( gray_img );
-#endif
 }

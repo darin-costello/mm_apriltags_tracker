@@ -13,6 +13,8 @@
 #include <AprilTags/Tag36h11.h>
 #include <Eigen/Dense>
 
+#include "opencv2/core/core.hpp"
+
 struct Pos2D{
   int x;
   int y;
@@ -44,7 +46,7 @@ public:
   void calibrate(vector<AprilTags::TagDetection>);
   std::pair<double,double> transform(double x, double y);
 
-  Eigen::Vector4d transformVect;
+  cv::Mat transformer;
 
 
 };
