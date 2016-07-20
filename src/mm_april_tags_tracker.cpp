@@ -28,7 +28,7 @@ using namespace cv;
 #define PI 3.1415926
 #define REACH_THRESHOLD 30
 #define DRAW // comment and remake to remove windows.
-//#define TURTLE # //uncoment and repalce # with turtle number
+#define TURTLE 97 //uncoment and repalce # with turtle number
 
 float convRadius(float radius) {
   if( radius < 0 ) {
@@ -98,7 +98,7 @@ void MMAprilTagsTracker::imageCallback( const sensor_msgs::ImageConstPtr& msg) {
           turtle.push_back(Point2f(tag.p[1].first, tag.p[1].second));
           std::vector<cv::Point2f> turtleN(turtle.size());
           perspectiveTransform(turtle, turtleN, transformer);
-          double theta = atan2(turtleN[2].y - turtleN[1].y, turtleN[2].x - turtleN[1].y);
+          double theta = atan2(turtleN[2].y - turtleN[1].y, turtleN[2].x - turtleN[1].x);
           geometry_msgs::Pose2D pose;
           pose.x = turtleN[0].x;
           pose.y = turtleN[0].y;
@@ -155,7 +155,7 @@ MMAprilTagsTracker::MMAprilTagsTracker( AprilTags::TagCodes codes  ) : m_it( m_n
         APRIL_TAG_POS_MSG_NAME, 1 );
 
   #ifdef TURTLE
-  m_t_pos_pub = m_nh.advertise<geometry_msgs::Pose2D>("robot_loc", 1);
+  m_t_pos_pub = m_nh.advertise<geometry_msgs::Pose2D>("robot_pos", 1);
   #endif
 
   std::map<std::string, int> param;

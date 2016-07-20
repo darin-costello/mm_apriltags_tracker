@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+
+  <rosparam command="load" file="$(find mm_apriltags_tracker)/launch/param/pos.yaml" />
+
+  <include file="$(find mm_apriltags_tracker)/launch/video.launch">
+    <arg name="cam" value="0" />
+  </include>
+
+  <include file="$(find mm_apriltags_tracker)/launch/video.launch">
+    <arg name="cam" value="1" />
+  </include>
+<!--
+  <include file="$(find mm_apriltags_tracker)/launch/video.launch">
+    <arg name="cam" value="2" />
+  </include>
+
+  <include file="$(find mm_apriltags_tracker)/launch/video.launch">
+    <arg name="cam" value="3" />
+  </include>
+-->
+</launch>
