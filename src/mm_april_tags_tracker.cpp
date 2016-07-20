@@ -24,6 +24,7 @@ using namespace cv;
 
 #define PI 3.1415926
 #define REACH_THRESHOLD 30
+#define DRAW
 
 float convRadius(float radius) {
   if( radius < 0 ) {
@@ -66,7 +67,13 @@ void MMAprilTagsTracker::imageCallback( const sensor_msgs::ImageConstPtr& msg) {
     return;
   }
   vector<AprilTags::TagDetection> tags = extractTags( cv_ptr->image );
+
+
   if(!calibrated){
+    #ifdef DRAW
+      for(int i = 0; i < tags.size(); i++)
+        tags[i].draw(cv_ptr->image);
+    #endif
     calibrate(tags);
   } else if( tags.size() > 0) {
     mm_apriltags_tracker::april_tag_pos msg;
@@ -74,7 +81,14 @@ void MMAprilTagsTracker::imageCallback( const sensor_msgs::ImageConstPtr& msg) {
     for( unsigned int i=0; i<tags.size(); i++ ){
       AprilTags::TagDetection tag = tags[i];
       if(groundLocs.end() != groundLocs.find(tag.id)) continue;
-      tag.draw(cv_ptr->image);
+      #ifdef DRAW
+          tag.draw(cv_ptr->image);
+      #endif
+
+      #ifdef TURTLE
+        if(tag.id == TURTLE){} //TODO calculate turtle transformation
+      #endif
+
       msg.id.push_back( tag.id );
       src.push_back(Point2f(tag.cxy.first, tag.cxy.second));
     }
@@ -92,7 +106,9 @@ void MMAprilTagsTracker::imageCallback( const sensor_msgs::ImageConstPtr& msg) {
   }
 
   //std::cout << "paint " << std::endl;
+  #ifdef DRAW
   cv::imshow(MM_APRIL_TAGS_TRACKER_VIEW, cv_ptr->image );
+  #endif
   /*
   int key_value = cv::waitKey(30);
   if( key_value == (int)('q') ) {
@@ -104,8 +120,10 @@ void MMAprilTagsTracker::imageCallback( const sensor_msgs::ImageConstPtr& msg) {
 }
 
 MMAprilTagsTracker::MMAprilTagsTracker( AprilTags::TagCodes codes  ) : m_it( m_nh ) , m_tag_codes( codes )  {
+  #ifdef DRAW
   cv::namedWindow(MM_APRIL_TAGS_TRACKER_VIEW);
   cv::startWindowThread();
+  #endif
 
   m_sub = m_it.subscribe("image",
                           1,
@@ -115,6 +133,10 @@ MMAprilTagsTracker::MMAprilTagsTracker( AprilTags::TagCodes codes  ) : m_it( m_n
 
   m_pos_pub = m_nh.advertise<mm_apriltags_tracker::april_tag_pos>(
         APRIL_TAG_POS_MSG_NAME, 1 );
+
+  #ifdef TURTLE
+  m_t_pos_pub = m_nh.advertise<geometry_msgs::Pose2D>(Pose2D, 1);
+  #endif
 
   std::map<std::string, int> param;
   m_nh.getParam("/abs_april_tag_loc", param);
