@@ -3,6 +3,9 @@
 #include <sstream>
 #include <string>
 #include <Eigen/Dense>
+
+#include<math.h>
+
 #include <opencv2/highgui/highgui.hpp>
 #include "opencv2/calib3d/calib3d.hpp"
 #include <opencv2/opencv.hpp>
@@ -24,7 +27,8 @@ using namespace cv;
 
 #define PI 3.1415926
 #define REACH_THRESHOLD 30
-#define DRAW
+#define DRAW // comment and remake to remove windows.
+//#define TURTLE # //uncoment and repalce # with turtle number
 
 float convRadius(float radius) {
   if( radius < 0 ) {
@@ -50,6 +54,7 @@ void MMAprilTagsTracker::calibrate(vector<AprilTags::TagDetection> tags){
   if(foundNumber < 4) return;
   transformer = findHomography(srcPoints, dstPoints);
   calibrated = true;
+  std::cout << "Calibrated" << std::endl;
 }
 
 std::pair<double,double> MMAprilTagsTracker::transform(double x, double y){
@@ -86,7 +91,22 @@ void MMAprilTagsTracker::imageCallback( const sensor_msgs::ImageConstPtr& msg) {
       #endif
 
       #ifdef TURTLE
-        if(tag.id == TURTLE){} //TODO calculate turtle transformation
+        if(tag.id == TURTLE){
+          std::vector<cv::Point2f> turtle;
+          turtle.push_back(Point2f(tag.cxy.first, tag.cxy.second));
+          turtle.push_back(Point2f(tag.p[0].first, tag.p[0].second));
+          turtle.push_back(Point2f(tag.p[1].first, tag.p[1].second));
+          std::vector<cv::Point2f> turtleN(turtle.size());
+          perspectiveTransform(turtle, turtleN, transformer);
+          double theta = atan2(turtleN[2].y - turtleN[1].y, turtleN[2].x - turtleN[1].y);
+          geometry_msgs::Pose2D pose;
+          pose.x = turtleN[0].x;
+          pose.y = turtleN[0].y;
+          pose.theta = theta;
+
+          m_t_pos_pub.publish(pose);
+          continue;
+        } //TODO calculate turtle transformation
       #endif
 
       msg.id.push_back( tag.id );
@@ -135,7 +155,7 @@ MMAprilTagsTracker::MMAprilTagsTracker( AprilTags::TagCodes codes  ) : m_it( m_n
         APRIL_TAG_POS_MSG_NAME, 1 );
 
   #ifdef TURTLE
-  m_t_pos_pub = m_nh.advertise<geometry_msgs::Pose2D>(Pose2D, 1);
+  m_t_pos_pub = m_nh.advertise<geometry_msgs::Pose2D>("robot_loc", 1);
   #endif
 
   std::map<std::string, int> param;
