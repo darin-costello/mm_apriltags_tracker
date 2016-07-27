@@ -105,7 +105,7 @@ void MMAprilTagsTracker::imageCallback( const sensor_msgs::ImageConstPtr& msg) {
           pose.theta = theta;
 
           m_t_pos_pub.publish(pose);
-          continue;
+//          continue;
         } //TODO calculate turtle transformation
       #endif
 
