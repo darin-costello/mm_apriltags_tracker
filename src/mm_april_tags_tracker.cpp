@@ -29,7 +29,7 @@ using namespace cv;
 #define APRILTAGSIZE  10.8
 
 #define DRAW // comment and remake to remove windows.
-#define TURTLE 97 //uncoment and repalce # with turtle number
+#define ROBOT 97 //uncoment and repalce # with turtle number
 
 float convRadius(float radius) {
   if( radius < 0 ) {
@@ -45,8 +45,8 @@ pair<double, double> pairAdd(pair<double, double> one, pair<double, double>two){
 pair<double, double> offSets [4] = {
                       pair<double, double>(-APRILTAGSIZE, APRILTAGSIZE),
                         pair<double, double>(APRILTAGSIZE, APRILTAGSIZE),
-                      pair<double, double>(APRILTAGSIZE, -APRILTAGSIZE),                  
-                      pair<double, double>(-APRILTAGSIZE, -APRILTAGSIZE)                     
+                      pair<double, double>(APRILTAGSIZE, -APRILTAGSIZE),
+                      pair<double, double>(-APRILTAGSIZE, -APRILTAGSIZE)
                       };
 
 void MMAprilTagsTracker::calibrate(vector<AprilTags::TagDetection> tags){
@@ -109,8 +109,8 @@ void MMAprilTagsTracker::imageCallback( const sensor_msgs::ImageConstPtr& msg) {
           tag.draw(cv_ptr->image);
       #endif
 
-      #ifdef TURTLE
-        if(tag.id == TURTLE){
+      #ifdef ROBOT
+        if(tag.id == ROBOT){
           std::vector<cv::Point2f> turtle;
           turtle.push_back(Point2f(tag.cxy.first, tag.cxy.second));
           turtle.push_back(Point2f(tag.p[0].first, tag.p[0].second));
@@ -172,7 +172,7 @@ MMAprilTagsTracker::MMAprilTagsTracker( AprilTags::TagCodes codes  ) : m_it( m_n
   m_pos_pub = m_nh.advertise<mm_apriltags_tracker::april_tag_pos>(
         APRIL_TAG_POS_MSG_NAME, 1 );
 
-  #ifdef TURTLE
+  #ifdef ROBOT
   m_t_pos_pub = m_nh.advertise<geometry_msgs::Pose2D>("robot_pos", 1);
   #endif
 
