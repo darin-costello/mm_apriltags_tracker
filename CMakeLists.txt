@@ -65,7 +65,7 @@ include_directories(include ${catkin_INCLUDE_DIRS}
 #target_link_libraries(hello_world ${roscpp_LIBRARIES})
 
 add_executable(mm_april_tags_tracker src/mm_april_tags_tracker.cpp
-                                     src/mm_apriltags_tracker_demo.cpp
+                                     src/mm_apriltags_tracker_start.cpp
               )
 
 target_link_libraries(mm_april_tags_tracker ${catkin_LIBRARIES}

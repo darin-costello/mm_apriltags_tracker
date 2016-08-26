@@ -23,7 +23,7 @@ using namespace cv;
 
 #define MM_APRIL_TAGS_TRACKER_VIEW "mm April Tags Tracker"
 #define APRIL_TAG_POS_MSG_NAME  "april_tag_pos"
-//#define TARGET_POS_MSG_NAME     "target_pos"
+#define ROBOT_POS_MSG_NAME     "robot_pos"
 
 #define PI 3.1415926
 #define APRILTAGSIZE  10.8
@@ -87,7 +87,7 @@ void MMAprilTagsTracker::imageCallback( const sensor_msgs::ImageConstPtr& msg) {
     cv_ptr = cv_bridge::toCvCopy( msg, "bgr8" );
   }
   catch( cv_bridge::Exception& e ) {
-    ROS_ERROR( "cv_bridge exce[topm: %s", e.what() );
+    ROS_ERROR( "cv_bridge exception: %s", e.what() );
     return;
   }
   vector<AprilTags::TagDetection> tags = extractTags( cv_ptr->image );
@@ -124,7 +124,7 @@ void MMAprilTagsTracker::imageCallback( const sensor_msgs::ImageConstPtr& msg) {
           pose.theta = theta;
 
           m_t_pos_pub.publish(pose);
-        } //TODO calculate turtle transformation
+        }
       #endif
 
       msg.id.push_back( tag.id );
@@ -143,15 +143,11 @@ void MMAprilTagsTracker::imageCallback( const sensor_msgs::ImageConstPtr& msg) {
     m_pos_pub.publish(msg);
   }
 
-  //std::cout << "paint " << std::endl;
+
   #ifdef DRAW
   cv::imshow(MM_APRIL_TAGS_TRACKER_VIEW, cv_ptr->image );
   #endif
-  /*
-  int key_value = cv::waitKey(30);
-  if( key_value == (int)('q') ) {
-    ros::shutdown();
-  }*/
+
   if( false == ros::ok() ) {
     ros::shutdown();
   }
@@ -173,7 +169,7 @@ MMAprilTagsTracker::MMAprilTagsTracker( AprilTags::TagCodes codes  ) : m_it( m_n
         APRIL_TAG_POS_MSG_NAME, 1 );
 
   #ifdef ROBOT
-  m_t_pos_pub = m_nh.advertise<geometry_msgs::Pose2D>("robot_pos", 1);
+  m_t_pos_pub = m_nh.advertise<geometry_msgs::Pose2D>("ROBOT_POS_MSG_NAME", 1);
   #endif
 
   std::map<std::string, int> param;

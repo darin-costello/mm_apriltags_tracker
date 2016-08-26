@@ -8,7 +8,7 @@ Eigen
 This package requires multiple cameras to be run simultaneously.
 You must have a parameter map named abs_april_tag_loc where each key:value pair has the form tagnumberX/Y:centerLocation.
 
-Each camera only needs to see one tag from abs_april_tag_loc. The tags needed to be printed two to a page(8.5 X 11 paper). Using the corners tags the camera computes a homograph matrix, The camera then will publish the translated location of any april tag it detects, not listed in abs_april_tag_loc.
+Each camera only needs to see one tag from abs_april_tag_loc. The tags needed to be printed two to a page(This can be adjusted by changing the value of APRILTAGSIZE in mm_apriltags_tracker.cpp). Using the corners tags the camera computes a homograph matrix, The camera then will publish the translated location of any april tag it detects, not listed in abs_april_tag_loc.
 
 There are two macros to help customize the behavior of the program They are defined at the top of mm_apriltags_tracker.cpp. The first is ROBOT. Defining this to a specific number will publish that april tag's location and rotation to the topic /robot_pos. The second is DRAW, which when defined will present what the cameras are seeing.
 

@@ -1,11 +1,12 @@
 <package>
   <!-- Package Metadata -->
   <name>mm_apriltags_tracker</name>
-  <maintainer email="daqing.yi@byu.edu">Walter</maintainer>
+  <maintainer email="Darin.costello@byu.edu">Darin</maintainer>
   <description>
-    mmple April Tags Tracker
+    Allows for multiple cameras to be run simultaniously, each detecting tags and trasnforming them into a common corridante system.
+    Adapted from multi_camera_apriltags_tracker with permission. (found here https://github.com/dqyi11/multi_camera_apriltags_tracker.git)
   </description>
-  <version>0.0.0</version>
+  <version>0.0.1</version>
   <license>BSD</license>
 
   <!-- Required by Catkin -->
